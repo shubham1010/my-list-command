@@ -1,11 +1,18 @@
 #include<dirent.h>
 #include<stdio.h>
-#include <sys/stat.h>
+#include<sys/stat.h>
 #include<stdlib.h>
+#include<pwd.h>
+#include<grp.h>
+#include<time.h>
+
+
 #define NORMAL_COLOR "\x1B[0m"
+
 void printPermissions(char *dirName);
 void lSubcommand(char *dirName); 
 void printFilesOrDir(struct dirent *dir);
+void printOwnerAndGroup(char *dirName);
 
 void lSubcommand(char *dirName) {
 	DIR *d = opendir(dirName);
@@ -14,12 +21,12 @@ void lSubcommand(char *dirName) {
 	if(d) {
 		while((dir = readdir(d)) != NULL) {
 			if(dir->d_name[0]!='.') {
+				printf("%s",NORMAL_COLOR);
 				printPermissions(dir->d_name);
 				printf("\t");
-				/*printOwner(dir->d_name);
-				printGroup(dir->d_name);
-				printSize(dir->d_name);
-				printBornTime(dir->d_name);*/
+				printOwnerAndGroup(dir->d_name);
+				printf("\t");
+				/*printBornTime(dir->d_name);*/
 				printFilesOrDir(dir);
 				printf("\n");
 			}
@@ -34,7 +41,6 @@ void printPermissions(char *dirName) {
         printf("Something went wrong!");
 		exit(1);
 	}
-	printf("%s",NORMAL_COLOR);
 	printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
     printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
     printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
@@ -45,4 +51,22 @@ void printPermissions(char *dirName) {
     printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
     printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
     printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+}
+
+void printOwnerAndGroup(char *dirName) {
+	struct stat info;
+	stat(dirName, &info);  // Error check omitted
+	struct passwd *pw = getpwuid(info.st_uid);
+	struct group  *gr = getgrgid(info.st_gid);
+
+	if(pw!=0) 
+		printf("%s\t",pw->pw_name);
+	else
+		printf("\t");
+	if(gr!=0)
+		printf("%s",gr->gr_name);
+	else
+		printf("\t");
+	printf("\t%u",(unsigned int)info.st_size);
+	printf("\t%s", ctime(&info.st_atime));
 }
