@@ -1,10 +1,11 @@
 #include <stdio.h>
-#define True 1
-#define False 0
 
 void justNameOfDirectories(char *dirname);
+void executeSubcommand(char *commands,char *dirName);
+char isSubcommand(char *str);
+
 int main(int argc, char *argv[]) {
-	
+	char ch;
 	switch(argc) {
 		
 		case 1:
@@ -12,10 +13,18 @@ int main(int argc, char *argv[]) {
 			break;
 		
 		case 2:
-			if(!isSubcommand(argv[1]))
-				justNameOfDirectories(argv[1]);
+			if(argv[1][0]=='-') {
+				ch=isSubcommand(argv[1]);
+				if(ch==' ')
+					executeSubcommand(argv[1],".");
+				else {
+					printf("myls: invalid option -- '%c'\nTry 'myls --help' for more information.",ch);
+				}
+					
+			}
 			else
-				executeSubcommand(argv[1])
+				justNameOfDirectories(argv[1]);
 			break;
 	}
 }
+
