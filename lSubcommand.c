@@ -1,5 +1,6 @@
 #include<dirent.h>
 #include<stdio.h>
+#include<string.h>
 #include<sys/stat.h>
 #include<stdlib.h>
 #include<pwd.h>
@@ -23,10 +24,8 @@ void lSubcommand(char *dirName) {
 			if(dir->d_name[0]!='.') {
 				printf("%s",NORMAL_COLOR);
 				printPermissions(dir->d_name);
-				printf("\t");
 				printOwnerAndGroup(dir->d_name);
 				printf("\t");
-				/*printBornTime(dir->d_name);*/
 				printFilesOrDir(dir);
 				printf("\n");
 			}
@@ -54,19 +53,19 @@ void printPermissions(char *dirName) {
 }
 
 void printOwnerAndGroup(char *dirName) {
+	char temp[100];
 	struct stat info;
 	stat(dirName, &info);  // Error check omitted
 	struct passwd *pw = getpwuid(info.st_uid);
 	struct group  *gr = getgrgid(info.st_gid);
 
 	if(pw!=0) 
-		printf("%s\t",pw->pw_name);
-	else
-		printf("\t");
+		printf("\t%s",pw->pw_name);
 	if(gr!=0)
-		printf("%s",gr->gr_name);
-	else
-		printf("\t");
+		printf("\t%s",gr->gr_name);
+	
 	printf("\t%u",(unsigned int)info.st_size);
-	printf("\t%s", ctime(&info.st_atime));
+	strcpy(temp, ctime(&info.st_mtime));
+	temp[strlen(temp)-9]='\0';
+	printf("\t%s",temp);
 }
